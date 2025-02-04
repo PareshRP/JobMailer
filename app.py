@@ -67,7 +67,7 @@ if st.button("Send Email"):
             <li><b>Data Analysis and Reporting:</b> Power BI, SQL, MySQL, MariaDB, MongoDB, REST API</li>
         </ul>
 
-        <p>Please find my CV and supporting documents attached for your review. I would be delighted to discuss how I can contribute to your team and look forward to hearing from you soon about this exciting opportunity.</p>
+        <p>Please find my resume attached for your review. I would be delighted to discuss how I can contribute to your team and look forward to hearing from you soon about this exciting opportunity.</p>
 
         <p>Kind regards,</p>
         <p><b>Paresh Patil</b></p>

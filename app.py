@@ -10,13 +10,11 @@ from email import encoders
 sender_email = st.secrets["EMAIL_ID"]
 sender_password = st.secrets["EMAIL_PASSWORD"]
 
-def send_email(to_emails, subject, body, attachment=None):
+def send_email(to_email, subject, body, attachment=None):
     try:
-        recipient_list = [email.strip() for email in to_emails.split(",")]
-
         msg = MIMEMultipart()
         msg['From'] = sender_email
-        msg['To'] = ", ".join(recipient_list)
+        msg['To'] = to_email
         msg['Subject'] = subject
 
         # Attach the HTML body
@@ -35,13 +33,13 @@ def send_email(to_emails, subject, body, attachment=None):
         server.starttls()
         server.login(sender_email, sender_password)
         text = msg.as_string()
-        server.sendmail(sender_email, recipient_list, text)
+        server.sendmail(sender_email, to_email, text)
         server.quit()
         
-        return "Email sent successfully!"
+        return f"Email sent successfully to {to_email}!"
     
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error sending email to {to_email}: {str(e)}"
 
 # Streamlit UI
 st.title("📧 Bulk Email Sender")
@@ -78,6 +76,11 @@ if st.button("Send Email"):
     </body>
     </html>
     """
+    
+    # Split the recipient emails into a list
+    recipient_list = [email.strip() for email in to_emails.split(",")]
 
-    result = send_email(to_emails, email_subject, email_body, resume)
-    st.success(result)
+    # Send an individual email to each recipient
+    for recipient in recipient_list:
+        result = send_email(recipient, email_subject, email_body, resume)
+        st.success(result)

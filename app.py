@@ -57,53 +57,54 @@ recipient_emails = [email.strip() for email in recipient_emails_input.split("\n"
 # Resume Upload (Drag & Drop)
 uploaded_file = st.file_uploader("Upload Your Resume (PDF, DOCX)", type=["pdf", "docx"], accept_multiple_files=False)
 
-# Confirmation Pop-up Before Sending
-if st.button("Send Emails") and recipient_emails:
-    if st.confirm("Are you sure you want to send emails to all recipients?"):
-        st.markdown("### Sending Emails...")
-        progress_bar = st.progress(0)
-        total_emails = len(recipient_emails)
+# Replace the confirmation with a radio button
+confirmation = st.radio("Are you sure you want to send emails to all recipients?", ("Yes", "No"))
+
+if confirmation == "Yes" and recipient_emails:
+    st.markdown("### Sending Emails...")
+    progress_bar = st.progress(0)
+    total_emails = len(recipient_emails)
+    
+    sent_emails = []
+    
+    for idx, recipient in enumerate(recipient_emails):
+        # Create the email
+        msg = MIMEMultipart()
+        msg['From'] = formataddr(("Paresh Patil", sender_email))
+        msg['To'] = recipient
+        msg['Subject'] = subject
         
-        sent_emails = []
+        # Add tracking pixel
+        tracking_pixel = f'<img src="https://your-tracking-server.com/track?email={recipient}" width="1" height="1">'
+        email_body_with_pixel = email_body + tracking_pixel
+        msg.attach(MIMEText(email_body_with_pixel, 'html'))
         
-        for idx, recipient in enumerate(recipient_emails):
-            # Create the email
-            msg = MIMEMultipart()
-            msg['From'] = formataddr(("Paresh Patil", sender_email))
-            msg['To'] = recipient
-            msg['Subject'] = subject
-            
-            # Add tracking pixel
-            tracking_pixel = f'<img src="https://your-tracking-server.com/track?email={recipient}" width="1" height="1">'
-            email_body_with_pixel = email_body + tracking_pixel
-            msg.attach(MIMEText(email_body_with_pixel, 'html'))
-            
-            # Attach Resume
-            if uploaded_file is not None:
-                part = MIMEBase('application', 'octet-stream')
-                part.set_payload(uploaded_file.read())
-                encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename="{uploaded_file.name}"')
-                msg.attach(part)
-            
-            # Send Email
-            try:
-                server = smtplib.SMTP('smtp.gmail.com', 587)
-                server.starttls()
-                server.login(sender_email, sender_password)
-                server.sendmail(msg['From'], [recipient], msg.as_string())
-                server.quit()
-                sent_emails.append(recipient)
-            except Exception as e:
-                st.error(f"Failed to send email to {recipient}: {e}")
-            
-            # Update progress
-            progress_bar.progress((idx + 1) / total_emails)
-            time.sleep(1)  # Simulate delay
+        # Attach Resume
+        if uploaded_file is not None:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(uploaded_file.read())
+            encoders.encode_base64(part)
+            part.add_header('Content-Disposition', f'attachment; filename="{uploaded_file.name}"')
+            msg.attach(part)
         
-        st.success("All emails sent successfully!")
+        # Send Email
+        try:
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(msg['From'], [recipient], msg.as_string())
+            server.quit()
+            sent_emails.append(recipient)
+        except Exception as e:
+            st.error(f"Failed to send email to {recipient}: {e}")
         
-        # Save Sent Emails for Tracking
-        with open("sent_emails_log.txt", "a") as log_file:
-            for email in sent_emails:
-                log_file.write(f"{email}\n")
+        # Update progress
+        progress_bar.progress((idx + 1) / total_emails)
+        time.sleep(1)  # Simulate delay
+    
+    st.success("All emails sent successfully!")
+    
+    # Save Sent Emails for Tracking
+    with open("sent_emails_log.txt", "a") as log_file:
+        for email in sent_emails:
+            log_file.write(f"{email}\n")

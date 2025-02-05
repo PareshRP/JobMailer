@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
+from streamlit_quill import st_quill  # Import Quill editor for rich text formatting
 
 # Fetch credentials from Streamlit secrets
 sender_email = st.secrets["EMAIL_ID"]
@@ -29,8 +30,8 @@ position_title = st.text_input("Position Title", value="DevOps Engineer")
 subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
-# Replace Quill with Text Area for email body
-email_body = st.text_area("Email Body", value="""Dear Hiring Manager/Recruiter,
+email_body = st_quill(value=""" 
+Dear Hiring Manager/Recruiter,
 
 I am writing to express my interest in the position of {position_title} as advertised recently. My qualifications, skills, and experience align closely with your requirements for this role.
 
@@ -42,11 +43,12 @@ I am writing to express my interest in the position of {position_title} as adver
 
 Please find my resume attached for your review. I would be delighted to discuss how I can contribute to your team.
 
-Kind regards,
-Paresh Patil
-LinkedIn: https://www.linkedin.com/in/pareshrp/
-WhatsApp: https://wa.me/+919930583517
-""", height=200)
+Kind regards,  
+Paresh Patil  
+LinkedIn: https://www.linkedin.com/in/pareshrp/  
+WhatsApp: https://wa.me/+919930583517  
+""", placeholder="Write your email here...")
+
 st.markdown(f"**Character Count:** {len(email_body)}/2000")
 
 # Email Recipient Input
@@ -57,10 +59,8 @@ recipient_emails = [email.strip() for email in recipient_emails_input.split("\n"
 # Resume Upload (Drag & Drop)
 uploaded_file = st.file_uploader("Upload Your Resume (PDF, DOCX)", type=["pdf", "docx"], accept_multiple_files=False)
 
-# Replace the confirmation with a radio button
-confirmation = st.radio("Are you sure you want to send emails to all recipients?", ("Yes", "No"))
-
-if confirmation == "Yes" and recipient_emails:
+# Send Emails Button
+if st.button("Send Emails") and recipient_emails:
     st.markdown("### Sending Emails...")
     progress_bar = st.progress(0)
     total_emails = len(recipient_emails)
@@ -74,7 +74,7 @@ if confirmation == "Yes" and recipient_emails:
         msg['To'] = recipient
         msg['Subject'] = subject
         
-        # Format email body as HTML
+        # Format email body as HTML (no tracking pixel)
         email_body_with_pixel = email_body  # No tracking pixel added
         
         # Attach the body as HTML (not plain text)

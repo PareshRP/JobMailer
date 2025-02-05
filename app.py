@@ -7,7 +7,6 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
-from streamlit_quill import st_quill  # Import Quill editor for rich text formatting
 
 # Fetch credentials from Streamlit secrets
 sender_email = st.secrets["EMAIL_ID"]
@@ -30,8 +29,8 @@ position_title = st.text_input("Position Title", value="DevOps Engineer")
 subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
-email_body = st_quill(value="""
-Dear Hiring Manager/Recruiter,
+# Replace Quill with Text Area for email body
+email_body = st.text_area("Email Body", value="""Dear Hiring Manager/Recruiter,
 
 I am writing to express my interest in the position of {position_title} as advertised recently. My qualifications, skills, and experience align closely with your requirements for this role.
 
@@ -47,8 +46,7 @@ Kind regards,
 Paresh Patil
 LinkedIn: https://www.linkedin.com/in/pareshrp/
 WhatsApp: https://wa.me/+919930583517
-""", placeholder="Write your email here...")
-
+""", height=200)
 st.markdown(f"**Character Count:** {len(email_body)}/2000")
 
 # Email Recipient Input

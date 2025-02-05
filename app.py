@@ -74,12 +74,13 @@ if confirmation == "Yes" and recipient_emails:
         msg['To'] = recipient
         msg['Subject'] = subject
         
-        # Add tracking pixel
-        tracking_pixel = f'<img src="https://your-tracking-server.com/track?email={recipient}" width="1" height="1">'
-        email_body_with_pixel = email_body + tracking_pixel
+        # Format email body as HTML
+        email_body_with_pixel = email_body  # No tracking pixel added
+        
+        # Attach the body as HTML (not plain text)
         msg.attach(MIMEText(email_body_with_pixel, 'html'))
         
-        # Attach Resume
+        # Attach Resume if uploaded
         if uploaded_file is not None:
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(uploaded_file.read())

@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
-from streamlit_quill import st_quill  # Import Quill editor for rich text formatting
+from streamlit_quill import st_quill  # Quill editor for rich text formatting
 
 TEMPLATE_FILE = "email_templates.json"
 
@@ -26,7 +26,8 @@ def save_templates(templates):
         json.dump(templates, file)
 
 # Initialize templates
-templates = load_templates()
+if "templates" not in st.session_state:
+    st.session_state.templates = load_templates()
 
 # Fetch credentials from Streamlit secrets
 sender_email = st.secrets["EMAIL_ID"]
@@ -47,31 +48,37 @@ position_title = st.text_input("Position Title", value="DevOps Engineer")
 subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
-# Template Selection with Delete Option
-template_options = ["New Template"] + list(templates.keys()) + [f"🗑️ Delete: {name}" for name in templates.keys()]
-selected_option = st.selectbox("Select a Template", template_options)
+# Template Selection
+template_names = list(st.session_state.templates.keys())
+selected_template = st.selectbox("Select a Template", ["New Template"] + template_names)
 
-if selected_option.startswith("🗑️ Delete: "):
-    template_to_delete = selected_option.replace("🗑️ Delete: ", "")
-    if template_to_delete in templates:
-        del templates[template_to_delete]
-        save_templates(templates)
-        st.warning(f"Template '{template_to_delete}' deleted!")
-        st.experimental_rerun()
+# Show delete icon next to saved templates
+if selected_template in st.session_state.templates:
+    col1, col2 = st.columns([8, 1])
+    with col1:
+        st.markdown(f"**Selected Template:** {selected_template}")
+    with col2:
+        if st.button("🗑️", key=f"delete_{selected_template}"):
+            del st.session_state.templates[selected_template]
+            save_templates(st.session_state.templates)
+            st.warning(f"Template '{selected_template}' deleted!")
+            st.experimental_rerun()
 
-elif selected_option == "New Template":
+# Template Editor
+if selected_template == "New Template":
     template_name = st.text_input("Enter Template Name")
     email_body = st_quill(placeholder="Write your email here...")
 else:
-    template_name = selected_option
-    email_body = st_quill(value=templates[selected_option])
+    template_name = selected_template
+    email_body = st_quill(value=st.session_state.templates[selected_template])
 
 # Save template button
 if st.button("Save Template"):
     if template_name and email_body:
-        templates[template_name] = email_body
-        save_templates(templates)
+        st.session_state.templates[template_name] = email_body
+        save_templates(st.session_state.templates)
         st.success(f"Template '{template_name}' saved!")
+        st.experimental_rerun()  # Refresh page to reflect the new template
 
 st.markdown(f"**Character Count:** {len(email_body)}/2000")
 

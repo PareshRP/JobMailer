@@ -10,7 +10,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
 from streamlit_quill import st_quill
-from streamlit_modal import modal
+from streamlit_modal import Modal
 
 TEMPLATE_FILE = "email_templates.json"
 
@@ -166,7 +166,7 @@ if st.button("Send Emails"):
     else:
         if uploaded_file is None:
             # Pop-up confirmation for sending without attachment
-            with st.modal("Send Email without Attachment?", key="popup_modal"):
+            with st.Modal("Send Email without Attachment?", key="popup_modal"):
                 if st.button("Yes"):
                     st.success("Sending Email without attachment.")
                     # Send Email Logic

@@ -9,102 +9,111 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
-from streamlit_quill import st_quill
-from streamlit_extras import add_vertical_space  # For better UI spacing
+from streamlit_quill import st_quill  # Import Quill editor for rich text formatting
 
-# ✅ Set page config (must be first)
-st.set_page_config(page_title="Email Sender", layout="centered")
-
-# ✅ Add custom CSS from external file
-with open("styles.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
-# ✅ Template file for saving emails
 TEMPLATE_FILE = "email_templates.json"
 
-# ✅ Load saved templates
+# Load saved templates
 def load_templates():
     if os.path.exists(TEMPLATE_FILE):
         with open(TEMPLATE_FILE, "r") as file:
             return json.load(file)
     return {}
 
-# ✅ Save templates
+# Save templates
 def save_templates(templates):
     with open(TEMPLATE_FILE, "w") as file:
         json.dump(templates, file)
-        
-# ✅ Delete a template
-def delete_template(template_name):
-    if template_name in templates:
-        del templates[template_name]
-        save_templates(templates)
-        st.experimental_rerun()  # Refresh UI immediately after deletion
 
-# ✅ Load templates
+# Initialize templates
 templates = load_templates()
 
-# ✅ Fetch credentials from Streamlit secrets
+# Fetch credentials from Streamlit secrets
 sender_email = st.secrets["EMAIL_ID"]
 sender_password = st.secrets["EMAIL_PASSWORD"]
 
-# ✅ Validate email function
+# Function to validate emails
 def is_valid_email(email):
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return re.match(pattern, email)
 
-# 🎯 **App Title & UI**
-st.title("📧 Automated Email Sender")
-st.markdown("### Compose Your Email")
+# Page Configuration
+st.set_page_config(page_title="Automated Email Sender", page_icon="📧", layout="wide")
 
-# ✅ **Email Fields**
-position_title = st.text_input("Position Title", value="DevOps Engineer")
+# Header Section
+st.markdown(
+    """
+    <style>
+    .title {
+        font-size: 36px;
+        font-weight: bold;
+        color: #1e1e1e;
+        text-align: center;
+    }
+    .subheader {
+        font-size: 20px;
+        font-weight: 300;
+        color: #555555;
+        text-align: center;
+    }
+    .input-label {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .email-recipient {
+        padding: 10px;
+        border-radius: 5px;
+        border: 2px solid #ccc;
+    }
+    .send-button {
+        background-color: #2F9BFE;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 12px;
+        border-radius: 8px;
+        width: 200px;
+    }
+    </style>
+    """, unsafe_allow_html=True
+)
+
+st.markdown('<div class="title">📧 Automated Email Sender</div>', unsafe_allow_html=True)
+st.markdown('<div class="subheader">Compose, Save, Load & Send Emails with Attachments</div>', unsafe_allow_html=True)
+
+# Email Input Fields
+position_title = st.text_input("Position Title", value="DevOps Engineer", label_visibility="collapsed")
 subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
-# ✅ **Template Selection with Delete Icon (🗑️)**
-st.markdown("### Select a Template")
-template_options = ["➕ New Template"] + list(templates.keys())
+# Template Selection
+template_options = ["New Template"] + list(templates.keys())
+selected_template = st.selectbox("Select a Template", template_options)
 
-selected_template = st.selectbox("", template_options)
-
-# ✅ If an existing template is selected, show delete icon
-if selected_template != "➕ New Template":
-    col1, col2 = st.columns([0.9, 0.1])
-    with col1:
-        template_name = selected_template
-    with col2:
-        if st.button("🗑️", key=f"delete_{template_name}"):
-            delete_template(template_name)
-            st.success(f"Template '{template_name}' deleted!")
-
-# ✅ If "New Template" is selected, allow user to enter name
-if selected_template == "➕ New Template":
+if selected_template == "New Template":
     template_name = st.text_input("Enter Template Name")
     email_body = st_quill(placeholder="Write your email here...")
 else:
+    template_name = selected_template
     email_body = st_quill(value=templates[selected_template])
 
-# ✅ **Save template button**
-if st.button("💾 Save Template"):
+# Save template button
+if st.button("Save Template"):
     if template_name and email_body:
         templates[template_name] = email_body
         save_templates(templates)
-        st.success(f"Template '{template_name}' saved! ✅")
-        st.experimental_rerun()  # Refresh dropdown immediately
+        st.success(f"Template '{template_name}' saved!")
 
-st.markdown(f"**Character Count:** {len(email_body)}/2000")
-
-# ✅ **Recipient Emails**
-st.markdown("### Recipients")
-recipient_emails_input = st.text_area("Enter each email on a new line:", height=100)
+# Email Recipient Input
+st.markdown('<div class="input-label">Recipients:</div>', unsafe_allow_html=True)
+recipient_emails_input = st.text_area("Enter each email on a new line:", height=100, label_visibility="collapsed", key="recipients")
 recipient_emails = [email.strip() for email in recipient_emails_input.split("\n") if email.strip() and is_valid_email(email.strip())]
 
-# ✅ **Resume Upload**
+# Resume Upload (Drag & Drop)
 uploaded_file = st.file_uploader("Upload Your Resume (PDF, DOCX)", type=["pdf", "docx"], accept_multiple_files=False)
 
-# ✅ **Send Emails**
-if st.button("🚀 Send Emails") and recipient_emails:
+# Send Emails Button
+if st.button("Send Emails") and recipient_emails:
     st.markdown("### Sending Emails...")
     progress_bar = st.progress(0)
     total_emails = len(recipient_emails)
@@ -132,12 +141,12 @@ if st.button("🚀 Send Emails") and recipient_emails:
             server.quit()
             sent_emails.append(recipient)
         except Exception as e:
-            st.error(f"❌ Failed to send email to {recipient}: {e}")
+            st.error(f"Failed to send email to {recipient}: {e}")
         
         progress_bar.progress((idx + 1) / total_emails)
         time.sleep(1)
     
-    st.success("🎉 All emails sent successfully!")
+    st.success("All emails sent successfully!")
     with open("sent_emails_log.txt", "a") as log_file:
         for email in sent_emails:
             log_file.write(f"{email}\n")

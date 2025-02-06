@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
-from streamlit_quill import st_quill  # Import Quill editor for rich text formatting
+from streamlit.components.v1 import html
 
 TEMPLATE_FILE = "email_templates.json"
 
@@ -40,31 +40,43 @@ def is_valid_email(email):
 # Page Configuration
 st.set_page_config(page_title="Automated Email Sender", page_icon="📧", layout="wide")
 
-# Header Section
+# Custom CSS
 st.markdown(
     """
     <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f7f6;
+    }
+
     .title {
         font-size: 36px;
         font-weight: bold;
-        color: #1e1e1e;
+        color: #2c3e50;
         text-align: center;
+        margin-top: 40px;
     }
+
     .subheader {
         font-size: 20px;
         font-weight: 300;
-        color: #555555;
+        color: #7f8c8d;
         text-align: center;
+        margin-bottom: 40px;
     }
+
     .input-label {
         font-size: 18px;
         font-weight: 600;
+        color: #34495e;
     }
+
     .email-recipient {
         padding: 10px;
         border-radius: 5px;
         border: 2px solid #ccc;
     }
+
     .send-button {
         background-color: #2F9BFE;
         color: white;
@@ -73,11 +85,25 @@ st.markdown(
         padding: 12px;
         border-radius: 8px;
         width: 200px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .send-button:hover {
+        background-color: #3498db;
+    }
+
+    .footer {
+        text-align: center;
+        color: #7f8c8d;
+        margin-top: 40px;
+        font-size: 14px;
     }
     </style>
     """, unsafe_allow_html=True
 )
 
+# Remove header and add footer
 st.markdown('<div class="title">📧 Automated Email Sender</div>', unsafe_allow_html=True)
 st.markdown('<div class="subheader">Compose, Save, Load & Send Emails with Attachments</div>', unsafe_allow_html=True)
 
@@ -92,10 +118,10 @@ selected_template = st.selectbox("Select a Template", template_options)
 
 if selected_template == "New Template":
     template_name = st.text_input("Enter Template Name")
-    email_body = st_quill(placeholder="Write your email here...")
+    email_body = st.text_area("Email Body", placeholder="Write your email here...", height=200)
 else:
     template_name = selected_template
-    email_body = st_quill(value=templates[selected_template])
+    email_body = templates[selected_template]
 
 # Save template button
 if st.button("Save Template"):
@@ -112,8 +138,28 @@ recipient_emails = [email.strip() for email in recipient_emails_input.split("\n"
 # Resume Upload (Drag & Drop)
 uploaded_file = st.file_uploader("Upload Your Resume (PDF, DOCX)", type=["pdf", "docx"], accept_multiple_files=False)
 
-# Send Emails Button
-if st.button("Send Emails") and recipient_emails:
+# Check if email body and recipients are not empty
+if st.button("Send Emails"):
+    if not email_body:
+        st.error("Email body should not be empty")
+    elif not recipient_emails:
+        st.error("Please provide at least one valid recipient email.")
+    else:
+        if uploaded_file is None:
+            # Pop-up confirmation for sending without attachment
+            with st.modal("Send Email without Attachment?", key="popup_modal"):
+                if st.button("Yes"):
+                    st.success("Sending Email without attachment.")
+                    # Send Email Logic
+                    send_emails()
+                elif st.button("No"):
+                    st.stop()
+        else:
+            # Send Email Logic
+            send_emails()
+
+# Function to send emails
+def send_emails():
     st.markdown("### Sending Emails...")
     progress_bar = st.progress(0)
     total_emails = len(recipient_emails)
@@ -150,3 +196,6 @@ if st.button("Send Emails") and recipient_emails:
     with open("sent_emails_log.txt", "a") as log_file:
         for email in sent_emails:
             log_file.write(f"{email}\n")
+
+# Footer Section
+st.markdown('<div class="footer">Made by Paresh Patil</div>', unsafe_allow_html=True)

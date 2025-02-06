@@ -52,7 +52,7 @@ st.markdown(f"**Character Count:** {len(subject)}/100")
 template_names = list(st.session_state.templates.keys())
 selected_template = st.selectbox("Select a Template", ["New Template"] + template_names)
 
-# Show delete icon next to saved templates
+# Delete template button logic
 if selected_template in st.session_state.templates:
     col1, col2 = st.columns([8, 1])
     with col1:
@@ -62,7 +62,7 @@ if selected_template in st.session_state.templates:
             del st.session_state.templates[selected_template]
             save_templates(st.session_state.templates)
             st.warning(f"Template '{selected_template}' deleted!")
-            st.experimental_rerun()
+            st.rerun()
 
 # Template Editor
 if selected_template == "New Template":
@@ -78,7 +78,7 @@ if st.button("Save Template"):
         st.session_state.templates[template_name] = email_body
         save_templates(st.session_state.templates)
         st.success(f"Template '{template_name}' saved!")
-        st.experimental_rerun()  # Refresh page to reflect the new template
+        st.rerun()  # Refresh page to reflect the new template
 
 st.markdown(f"**Character Count:** {len(email_body)}/2000")
 

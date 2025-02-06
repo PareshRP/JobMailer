@@ -14,12 +14,12 @@ from streamlit_quill import st_quill  # Quill editor for rich text formatting
 TEMPLATE_FILE = "email_templates.json"
 
 # Hide the GitHub icon
-hide_github_icon = """
-#GithubIcon {
-  visibility: hidden;
-}
+hide_streamlit_style = """
+    <style>
+    header {visibility: hidden;}
+    </style>
 """
-st.markdown(hide_github_icon, unsafe_allow_html=True)
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Load saved templates
 def load_templates():

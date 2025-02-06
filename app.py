@@ -142,7 +142,7 @@ if st.button("🚀 Send Emails"):
 
         for idx, recipient in enumerate(recipient_emails):
             msg = MIMEMultipart()
-            msg['From'] = formataddr((sender_name if sender_name else "Hiring Manager", sender_email))
+            msg['From'] = formataddr(("Paresh Patil", sender_email))
             msg['To'] = recipient
             msg['Subject'] = subject
             msg.attach(MIMEText(email_body, 'html'))

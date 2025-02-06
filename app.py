@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
-from streamlit.components.v1 import html
+from streamlit_modal import Modal
 
 TEMPLATE_FILE = "email_templates.json"
 
@@ -40,7 +40,7 @@ def is_valid_email(email):
 # Page Configuration
 st.set_page_config(page_title="Automated Email Sender", page_icon="📧", layout="wide")
 
-# Custom CSS
+# Custom CSS to hide GitHub icon and add styling
 st.markdown(
     """
     <style>
@@ -99,11 +99,29 @@ st.markdown(
         margin-top: 40px;
         font-size: 14px;
     }
+
+    /* Hide GitHub Icon */
+    #GithubIcon {
+        visibility: hidden;
+    }
+
+    /* Menu bar styling */
+    .menu-bar {
+        background-color: #2F9BFE;
+        padding: 10px 20px;
+        text-align: center;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
     </style>
     """, unsafe_allow_html=True
 )
 
-# Remove header and add footer
+# Menu Bar
+st.markdown('<div class="menu-bar">Automated Email Sender</div>', unsafe_allow_html=True)
+
+# Title and Subheader
 st.markdown('<div class="title">📧 Automated Email Sender</div>', unsafe_allow_html=True)
 st.markdown('<div class="subheader">Compose, Save, Load & Send Emails with Attachments</div>', unsafe_allow_html=True)
 

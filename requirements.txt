@@ -1,1 +1,2 @@
 streamlit-quill
+streamlit-extras

@@ -2,12 +2,31 @@ import streamlit as st
 import smtplib
 import re
 import time
+import json
+import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
 from streamlit_quill import st_quill  # Import Quill editor for rich text formatting
+
+TEMPLATE_FILE = "email_templates.json"
+
+# Load saved templates
+def load_templates():
+    if os.path.exists(TEMPLATE_FILE):
+        with open(TEMPLATE_FILE, "r") as file:
+            return json.load(file)
+    return {}
+
+# Save templates
+def save_templates(templates):
+    with open(TEMPLATE_FILE, "w") as file:
+        json.dump(templates, file)
+
+# Initialize templates
+templates = load_templates()
 
 # Fetch credentials from Streamlit secrets
 sender_email = st.secrets["EMAIL_ID"]
@@ -18,10 +37,8 @@ def is_valid_email(email):
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return re.match(pattern, email)
 
-# Streamlit UI
 st.set_page_config(page_title="Email Sender", layout="centered")
 st.title("📧 Automated Email Sender")
-
 st.markdown("### Compose Your Email")
 st.markdown("_Customize the subject and body before sending._")
 
@@ -30,24 +47,23 @@ position_title = st.text_input("Position Title", value="DevOps Engineer")
 subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
-email_body = st_quill(value=""" 
-Dear Hiring Manager/Recruiter,
+# Template Selection
+template_options = ["New Template"] + list(templates.keys())
+selected_template = st.selectbox("Select a Template", template_options)
 
-I am writing to express my interest in the position of {position_title} as advertised recently. My qualifications, skills, and experience align closely with your requirements for this role.
+if selected_template == "New Template":
+    template_name = st.text_input("Enter Template Name")
+    email_body = st_quill(placeholder="Write your email here...")
+else:
+    template_name = selected_template
+    email_body = st_quill(value=templates[selected_template])
 
-### **Technical Skills**
-- **DevOps Tools:** Jenkins, Ansible, Docker, Kubernetes, Terraform, Git, GitHub Actions, GitLab, Gerrit, SonarQube
-- **Programming and Scripting:** Python, Bash/Shell Scripting, Groovy, PowerShell, YAML, JSON
-- **Cloud and Infrastructure:** AWS, Azure, GCP, OpenStack, VMware, RHEL, Kubernetes Cluster Security
-- **Data Analysis and Reporting:** Power BI, SQL, MySQL, MariaDB, MongoDB, REST API
-
-Please find my resume attached for your review. I would be delighted to discuss how I can contribute to your team.
-
-Kind regards,  
-Paresh Patil  
-LinkedIn: https://www.linkedin.com/in/pareshrp/  
-WhatsApp: https://wa.me/+919930583517  
-""", placeholder="Write your email here...")
+# Save template button
+if st.button("Save Template"):
+    if template_name and email_body:
+        templates[template_name] = email_body
+        save_templates(templates)
+        st.success(f"Template '{template_name}' saved!")
 
 st.markdown(f"**Character Count:** {len(email_body)}/2000")
 
@@ -64,23 +80,15 @@ if st.button("Send Emails") and recipient_emails:
     st.markdown("### Sending Emails...")
     progress_bar = st.progress(0)
     total_emails = len(recipient_emails)
-    
     sent_emails = []
     
     for idx, recipient in enumerate(recipient_emails):
-        # Create the email
         msg = MIMEMultipart()
         msg['From'] = formataddr(("Paresh Patil", sender_email))
         msg['To'] = recipient
         msg['Subject'] = subject
+        msg.attach(MIMEText(email_body, 'html'))
         
-        # Format email body as HTML (no tracking pixel)
-        email_body_with_pixel = email_body  # No tracking pixel added
-        
-        # Attach the body as HTML (not plain text)
-        msg.attach(MIMEText(email_body_with_pixel, 'html'))
-        
-        # Attach Resume if uploaded
         if uploaded_file is not None:
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(uploaded_file.read())
@@ -88,7 +96,6 @@ if st.button("Send Emails") and recipient_emails:
             part.add_header('Content-Disposition', f'attachment; filename="{uploaded_file.name}"')
             msg.attach(part)
         
-        # Send Email
         try:
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
@@ -99,13 +106,10 @@ if st.button("Send Emails") and recipient_emails:
         except Exception as e:
             st.error(f"Failed to send email to {recipient}: {e}")
         
-        # Update progress
         progress_bar.progress((idx + 1) / total_emails)
-        time.sleep(1)  # Simulate delay
+        time.sleep(1)
     
     st.success("All emails sent successfully!")
-    
-    # Save Sent Emails for Tracking
     with open("sent_emails_log.txt", "a") as log_file:
         for email in sent_emails:
             log_file.write(f"{email}\n")

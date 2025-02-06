@@ -60,7 +60,7 @@ def is_valid_email(email):
 
 # Default template to be used if the user doesn't choose or create a template
 default_template = """
-Dear [Recruiter's Name],
+Dear [Recipient Name],
 
 I hope this message finds you well. My name is [Your Name], and I am a [Your Profession] with [X years] of experience in [Your Field]. I am writing to express my interest in the [Specific Role] at [Company Name].
 
@@ -94,6 +94,9 @@ position_title = st.text_input("Position Title", value="DevOps Engineer")
 subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
+# Input for Recipient Name (New input added here)
+recipient_name = st.text_input("Enter Recipient's Name", value="Recipient")
+
 # Template Selection
 template_names = list(st.session_state.templates.keys())
 selected_template = st.selectbox("Select a Template", ["New Template"] + template_names)
@@ -106,13 +109,19 @@ else:
     template_name = selected_template
     email_body = st_quill(value=st.session_state.templates[selected_template])
 
+# Ensure the email body uses the provided recipient name or defaults to "Dear Hiring Manager"
+if recipient_name:
+    email_body = email_body.replace("[Recipient Name]", recipient_name)
+else:
+    email_body = email_body.replace("[Recipient Name]", "Hiring Manager")
+
 # Save template button
 if st.button("💾 Save Template"):
     if template_name and email_body:
         st.session_state.templates[template_name] = email_body
         save_templates(st.session_state.templates)
         st.success(f"Template '{template_name}' saved!")
-        st.experimental_rerun()  # Refresh page to reflect the new template
+        st.rerun()  # Refresh page to reflect the new template
 
 st.markdown(f"**Character Count:** {len(email_body)}/2000")
 

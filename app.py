@@ -47,16 +47,24 @@ position_title = st.text_input("Position Title", value="DevOps Engineer")
 subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
-# Template Selection
-template_options = ["New Template"] + list(templates.keys())
-selected_template = st.selectbox("Select a Template", template_options)
+# Template Selection with Delete Option
+template_options = ["New Template"] + list(templates.keys()) + [f"🗑️ Delete: {name}" for name in templates.keys()]
+selected_option = st.selectbox("Select a Template", template_options)
 
-if selected_template == "New Template":
+if selected_option.startswith("🗑️ Delete: "):
+    template_to_delete = selected_option.replace("🗑️ Delete: ", "")
+    if template_to_delete in templates:
+        del templates[template_to_delete]
+        save_templates(templates)
+        st.warning(f"Template '{template_to_delete}' deleted!")
+        st.experimental_rerun()
+
+elif selected_option == "New Template":
     template_name = st.text_input("Enter Template Name")
     email_body = st_quill(placeholder="Write your email here...")
 else:
-    template_name = selected_template
-    email_body = st_quill(value=templates[selected_template])
+    template_name = selected_option
+    email_body = st_quill(value=templates[selected_option])
 
 # Save template button
 if st.button("Save Template"):

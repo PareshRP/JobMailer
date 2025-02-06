@@ -12,7 +12,6 @@ from email.utils import formataddr
 from streamlit_quill import st_quill  # Quill editor for rich text formatting
 from streamlit_extras import add_vertical_space  # For better UI spacing
 
-TEMPLATE_FILE = "email_templates.json"
 # ✅ Set page config (must be first)
 st.set_page_config(page_title="Email Sender", layout="centered")
 
@@ -86,7 +85,6 @@ if "default template" not in st.session_state.templates:
 sender_name = st.text_input("Enter Your Name (Optional)", value="Hiring Manager")
 
 # App UI
-st.set_page_config(page_title="Email Sender", layout="centered")
 st.title("📧 Automated Email Sender")
 st.markdown("### Compose Your Email")
 st.markdown("_Customize the subject and body before sending._")

@@ -131,41 +131,43 @@ recipient_emails = [email.strip() for email in recipient_emails_input.split("\n"
 uploaded_file = st.file_uploader("Upload Your Resume (PDF, DOCX)", type=["pdf", "docx"], accept_multiple_files=False)
 
 # Send Emails Button
-if st.button("🚀 Send Emails") and recipient_emails:
-    st.markdown("### Sending Emails...")
-    progress_bar = st.progress(0)
-    total_emails = len(recipient_emails)
-    sent_emails = []
+if st.button("🚀 Send Emails"):
+    if not recipient_emails:  # Check if no valid email was entered
+        st.warning("Please enter at least one valid email address.")
+    else:
+        st.markdown("### Sending Emails...")
+        progress_bar = st.progress(0)
+        total_emails = len(recipient_emails)
+        sent_emails = []
 
-    for idx, recipient in enumerate(recipient_emails):
-        msg = MIMEMultipart()
-        msg['From'] = formataddr(("Paresh Patil", sender_email))
-        msg['To'] = recipient
-        msg['Subject'] = subject
-        msg.attach(MIMEText(email_body, 'html'))
+        for idx, recipient in enumerate(recipient_emails):
+            msg = MIMEMultipart()
+            msg['From'] = formataddr((sender_name if sender_name else "Hiring Manager", sender_email))
+            msg['To'] = recipient
+            msg['Subject'] = subject
+            msg.attach(MIMEText(email_body, 'html'))
 
-        if uploaded_file is not None:
-            part = MIMEBase('application', 'octet-stream')
-            part.set_payload(uploaded_file.read())
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', f'attachment; filename="{uploaded_file.name}"')
-            msg.attach(part)
+            if uploaded_file is not None:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(uploaded_file.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename="{uploaded_file.name}"')
+                msg.attach(part)
 
-        try:
-            server = smtplib.SMTP('smtp.gmail.com', 587)
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(msg['From'], [recipient], msg.as_string())
-            server.quit()
-            sent_emails.append(recipient)
-        except Exception as e:
-            st.error(f"Failed to send email to {recipient}: {e}")
+            try:
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.starttls()
+                server.login(sender_email, sender_password)
+                server.sendmail(msg['From'], [recipient], msg.as_string())
+                server.quit()
+                sent_emails.append(recipient)
+            except Exception as e:
+                st.error(f"Failed to send email to {recipient}: {e}")
 
-        progress_bar.progress((idx + 1) / total_emails)
-        time.sleep(1)
+            progress_bar.progress((idx + 1) / total_emails)
+            time.sleep(1)
 
-    st.success("All emails sent successfully!")
-    st.success("🎉 All emails sent successfully!")
-    with open("sent_emails_log.txt", "a") as log_file:
-        for email in sent_emails:
-            log_file.write(f"{email}\n")
+        st.success("All emails sent successfully!")
+        with open("sent_emails_log.txt", "a") as log_file:
+            for email in sent_emails:
+                log_file.write(f"{email}\n")

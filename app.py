@@ -70,19 +70,13 @@ I admire [Company Name] for [Specific Reason, e.g., its innovation, impact, or m
 
 Would you be open to a brief conversation to explore how my background might align with your team’s needs?
 
-Best regards,
-[Your Name]
-[Your Email]
-[LinkedIn Profile]
+Best regards,<br>[Your Name]<br>[Your Email]<br>[LinkedIn Profile]
 """
 
 # Store default template in templates
 if "default template" not in st.session_state.templates:
     st.session_state.templates["default template"] = default_template
     save_templates(st.session_state.templates)
-
-# Sender's Name Input (Optional)
-sender_name = st.text_input("Enter Your Name (Optional)", value="Hiring Manager")
 
 # App UI
 st.title("📧 Automated Email Sender")
@@ -95,7 +89,7 @@ subject = st.text_input("Email Subject", value=f"Application for the position of
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
 # Input for Recipient Name (New input added here)
-recipient_name = st.text_input("Enter Recipient's Name", value="Recipient")
+recipient_name = st.text_input("Enter Recipient's Name", value="Hiring Manager")
 
 # Template Selection
 template_names = list(st.session_state.templates.keys())
@@ -114,6 +108,9 @@ if recipient_name:
     email_body = email_body.replace("[Recipient Name]", recipient_name)
 else:
     email_body = email_body.replace("[Recipient Name]", "Hiring Manager")
+
+# Convert line breaks to <br> tags for HTML format
+email_body = email_body.replace("\n", "<br>")
 
 # Save template button
 if st.button("💾 Save Template"):

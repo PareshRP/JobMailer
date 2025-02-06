@@ -10,7 +10,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
 from streamlit_quill import st_quill
-from streamlit_modal import Modal
+from streamlit_modal import modal
 
 TEMPLATE_FILE = "email_templates.json"
 

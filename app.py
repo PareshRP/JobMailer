@@ -9,8 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
-from streamlit_quill import st_quill
-from streamlit_modal import Modal
+from streamlit_quill import st_quill  # Import the streamlit-quill package
 
 TEMPLATE_FILE = "email_templates.json"
 
@@ -137,7 +136,7 @@ selected_template = st.selectbox("Select a Template", template_options)
 
 if selected_template == "New Template":
     template_name = st.text_input("Enter Template Name")
-    email_body = st_quill(label="Email Body", height=200, placeholder="Write your email here...")
+    email_body = st_quill(height=200, placeholder="Write your email here...")  # Use streamlit-quill for email body
 else:
     template_name = selected_template
     email_body = templates[selected_template]
@@ -166,7 +165,7 @@ if st.button("Send Emails"):
     else:
         if uploaded_file is None:
             # Pop-up confirmation for sending without attachment
-            with st.Modal("Send Email without Attachment?", key="popup_modal"):
+            with st.modal("Send Email without Attachment?", key="popup_modal"):
                 if st.button("Yes"):
                     st.success("Sending Email without attachment.")
                     # Send Email Logic

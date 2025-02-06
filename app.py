@@ -15,14 +15,9 @@ from streamlit_extras import add_vertical_space  # For better UI spacing
 # ✅ Set page config (must be first)
 st.set_page_config(page_title="Email Sender", layout="centered")
 
-# ✅ Hide GitHub icon & Streamlit branding
-hide_streamlit_style = """
-    <style>
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    </style>
-"""
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+# ✅ Add custom CSS from external file
+with open("styles.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # ✅ Template file for saving emails
 TEMPLATE_FILE = "email_templates.json"

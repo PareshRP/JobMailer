@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from email.utils import formataddr
+from streamlit_quill import st_quill
 from streamlit_modal import Modal
 
 TEMPLATE_FILE = "email_templates.json"
@@ -136,7 +137,7 @@ selected_template = st.selectbox("Select a Template", template_options)
 
 if selected_template == "New Template":
     template_name = st.text_input("Enter Template Name")
-    email_body = st.text_area("Email Body", placeholder="Write your email here...", height=200)
+    email_body = st_quill(label="Email Body", height=200, placeholder="Write your email here...")
 else:
     template_name = selected_template
     email_body = templates[selected_template]

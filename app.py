@@ -95,19 +95,20 @@ recipient_name = st.text_input("Enter Recipient's Name", value="Hiring Manager")
 template_names = list(st.session_state.templates.keys())
 selected_template = st.selectbox("Select a Template", ["New Template"] + template_names)
 
+# Instruction to guide users
+st.markdown("**Tip:** Use `[Recipient Name]` in your email body where you want the recipient's name to appear dynamically.")
+
 # Template Editor
 if selected_template == "New Template":
     template_name = st.text_input("Enter Template Name")
-    email_body = st_quill(placeholder="Write your email here...", html=True)
+    email_body = st_quill(placeholder="Write your email here... (Use [Recipient Name] for dynamic name replacement)", html=True)
 else:
     template_name = selected_template
     email_body = st_quill(value=st.session_state.templates[selected_template], html=True)
 
-# Ensure recipient name replacement
-if recipient_name:
-    email_body = email_body.replace("[Recipient Name]", recipient_name)
-else:
-    email_body = email_body.replace("[Recipient Name]", "Hiring Manager")
+# Automatically prepend "Dear [Recipient Name]," if not included in the template
+if "[Recipient Name]" not in email_body:
+    email_body = f"Dear [Recipient Name],\n\n{email_body}"
 
 # Save template button
 if st.button("💾 Save Template"):

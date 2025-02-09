@@ -39,7 +39,7 @@ def load_templates():
 # ✅ Save templates
 def save_templates(templates):
     with open(TEMPLATE_FILE, "w") as file:
-        json.dump(templates, file)
+        json.dump(templates, file, ensure_ascii=False, indent=4)
 
 # ✅ Initialize templates
 if "templates" not in st.session_state:

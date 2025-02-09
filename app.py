@@ -98,27 +98,24 @@ selected_template = st.selectbox("Select a Template", ["New Template"] + templat
 # Template Editor
 if selected_template == "New Template":
     template_name = st.text_input("Enter Template Name")
-    email_body = st_quill(placeholder="Write your email here...")
+    email_body = st_quill(placeholder="Write your email here...", html=True)
 else:
     template_name = selected_template
-    email_body = st_quill(value=st.session_state.templates[selected_template])
+    email_body = st_quill(value=st.session_state.templates[selected_template], html=True)
 
-# Ensure the email body uses the provided recipient name or defaults to "Dear Hiring Manager"
+# Ensure recipient name replacement
 if recipient_name:
     email_body = email_body.replace("[Recipient Name]", recipient_name)
 else:
     email_body = email_body.replace("[Recipient Name]", "Hiring Manager")
 
-# Convert line breaks to <br> tags for HTML format
-email_body = email_body.replace("\n", "<br>")
-
 # Save template button
 if st.button("💾 Save Template"):
     if template_name and email_body:
-        st.session_state.templates[template_name] = email_body
+        st.session_state.templates[template_name] = email_body  # Store as raw HTML
         save_templates(st.session_state.templates)
         st.success(f"Template '{template_name}' saved!")
-        st.rerun()  # Refresh page to reflect the new template
+        st.rerun()  # Refresh page to reflect updated template
 
 st.markdown(f"**Character Count:** {len(email_body)}/2000")
 

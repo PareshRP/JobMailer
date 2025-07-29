@@ -52,6 +52,16 @@ templates = load_templates()
 sender_email = st.secrets["EMAIL_ID"]
 sender_password = st.secrets["EMAIL_PASSWORD"]
 
+
+def convert_paragraphs_to_line_breaks(html_content):
+    soup = BeautifulSoup(html_content, "html.parser")
+    result_lines = []
+    for elem in soup.find_all(['p', 'div']):
+        if elem.text.strip():
+            result_lines.append(elem.text.strip())
+    return "<br>".join(result_lines)
+
+
 # Function to validate emails
 # ✅ Validate email function
 def is_valid_email(email):
@@ -144,7 +154,8 @@ if st.button("🚀 Send Emails"):
             msg['From'] = formataddr(("Paresh Patil", sender_email))
             msg['To'] = recipient
             msg['Subject'] = subject
-            msg.attach(MIMEText(email_body, 'html'))
+            cleaned_body = convert_paragraphs_to_line_breaks(email_body)
+            msg.attach(MIMEText(cleaned_body, 'html'))
 
             if uploaded_file is not None:
                 part = MIMEBase('application', 'octet-stream')

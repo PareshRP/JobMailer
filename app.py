@@ -107,9 +107,9 @@ else:
     template_name = selected_template
     email_body = st_quill(value=st.session_state.templates[selected_template], html=True)
 
-# Automatically prepend "Dear [Recipient Name]," if not included in the template
-if "[Recipient Name]" not in email_body:
-    email_body = f"Dear [Recipient Name],\n\n{email_body}"
+# # Automatically prepend "Dear [Recipient Name]," if not included in the template
+# if "[Recipient Name]" not in email_body:
+#     email_body = f"Dear [Recipient Name],\n\n{email_body}"
 
 # Save template button
 if st.button("💾 Save Template"):

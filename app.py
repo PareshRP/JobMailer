@@ -54,13 +54,12 @@ sender_email = st.secrets["EMAIL_ID"]
 sender_password = st.secrets["EMAIL_PASSWORD"]
 
 
-def convert_paragraphs_to_line_breaks(html_content):
+def replace_paragraphs_with_line_breaks(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
-    result_lines = []
-    for elem in soup.find_all(['p', 'div']):
-        if elem.text.strip():
-            result_lines.append(elem.text.strip())
-    return "<br>".join(result_lines)
+    for p in soup.find_all(['p', 'div']):
+        p.insert_after(soup.new_tag("br"))
+        p.unwrap()
+    return str(soup)
 
 
 # Function to validate emails
@@ -155,7 +154,7 @@ if st.button("🚀 Send Emails"):
             msg['From'] = formataddr(("Paresh Patil", sender_email))
             msg['To'] = recipient
             msg['Subject'] = subject
-            cleaned_body = convert_paragraphs_to_line_breaks(email_body)
+            cleaned_body = replace_paragraphs_with_line_breaks(email_body)
             msg.attach(MIMEText(cleaned_body, 'html'))
 
             if uploaded_file is not None:

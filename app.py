@@ -84,8 +84,9 @@ st.markdown("### Compose Your Email")
 st.markdown("_Customize the subject and body before sending._")
 
 # Email Input Fields
-position_title = st.text_input("Position Title", value="DevOps Engineer")
-subject = st.text_input("Email Subject", value=f"Application for the position of {position_title}", max_chars=100)
+position_title = st.text_input("Job Role", value="DevOps Engineer")
+company_name = st.text_input("Company Name", value="")
+subject = st.text_input("Email Subject", value=f"Application for {position_title} | {company_name}", max_chars=100)
 st.markdown(f"**Character Count:** {len(subject)}/100")
 
 # Input for Recipient Name (New input added here)
